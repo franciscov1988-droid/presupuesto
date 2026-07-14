@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E1B1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Presupuesto Familiar</title>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Presupuesto%20Familiar%22%2C%22short_name%22%3A%22Presupuesto%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230E1B1A%22%2C%22theme_color%22%3A%22%230E1B1A%22%7D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1B1A; --surface:#152827; --surface-2:#1C3433; --line:#26413F;
+    --text:#E9F1EE; --muted:#8CA8A3; --faint:#5E7A76;
+    --gold:#E9B356; --green:#5FC08C; --red:#E06A5D; --paco:#5AB7D1; --lulu:#E77BA4;
+    --radius:14px;
+    --ff-body:'Inter Tight',system-ui,sans-serif;
+    --ff-num:'IBM Plex Mono',monospace;
+    --ff-dis:'Instrument Serif',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--text);font-family:var(--ff-body);font-size:15px;line-height:1.45;
+    padding-bottom:calc(78px + env(safe-area-inset-bottom));min-height:100vh}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .num{font-family:var(--ff-num);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+  /* ---------- Login ---------- */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card-login{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px}
+  .card-login h1{font-family:var(--ff-dis);font-size:34px;font-weight:400;line-height:1.1;margin-bottom:6px}
+  .card-login p.sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin-bottom:6px}
+  input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 13px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+  .btn{background:var(--gold);color:#20180A;border:none;border-radius:10px;padding:13px 18px;font-weight:600;cursor:pointer;width:100%}
+  .btn:active{transform:scale(.985)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+  .btn.danger{background:transparent;border:1px solid var(--red);color:var(--red)}
+  .btn.sm{width:auto;padding:9px 14px;font-size:13px;border-radius:9px}
+  .err{color:var(--red);font-size:13px;margin-top:10px;min-height:18px}
+
+  /* ---------- Header ---------- */
+  header{position:sticky;top:0;z-index:30;background:rgba(14,27,26,.93);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top)) 16px 12px}
+  .htop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .periodo-sel{flex:1;min-width:0}
+  .periodo-sel select{background:transparent;border:none;padding:0;font-family:var(--ff-dis);font-size:23px;
+    width:100%;text-overflow:ellipsis}
+  .periodo-sel select option{background:var(--surface);font-family:var(--ff-body);font-size:15px}
+  .who{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#0E1B1A}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .dot.off{background:var(--red);box-shadow:none}
+  .cinta{display:flex;gap:2px;margin-top:12px}
+  .cinta i{flex:1;height:5px;border-radius:2px;background:var(--surface-2)}
+  .cinta i.pasado{background:var(--faint)}
+  .cinta i.hoy{background:var(--gold);box-shadow:0 0 8px rgba(233,179,86,.6)}
+  .cinta-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-top:5px;
+    text-transform:uppercase;letter-spacing:.06em}
+
+  main{padding:18px 16px 24px;max-width:760px;margin:0 auto}
+  .view{display:none} .view.on{display:block}
+
+  /* ---------- Hero saldo ---------- */
+  .hero{background:linear-gradient(155deg,var(--surface-2),var(--surface));border:1px solid var(--line);
+    border-radius:18px;padding:20px;margin-bottom:14px}
+  .hero .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .hero .big{font-family:var(--ff-num);font-size:clamp(34px,10vw,46px);font-weight:600;line-height:1.1;margin:4px 0 2px}
+  .hero .big.pos{color:var(--green)} .hero .big.neg{color:var(--red)}
+  .hero .note{font-size:13px;color:var(--muted)}
+  .barra{height:8px;background:var(--bg);border-radius:6px;overflow:hidden;display:flex;margin-top:14px}
+  .barra span{height:100%}
+  .leyenda{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)}
+  .leyenda b{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .kpi .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+  .kpi .v{font-family:var(--ff-num);font-size:20px;font-weight:600}
+  .kpi .s{font-size:12px;color:var(--faint);margin-top:2px}
+
+  h2.sec{font-family:var(--ff-dis);font-size:22px;font-weight:400;margin:22px 0 10px;display:flex;
+    align-items:center;justify-content:space-between;gap:10px}
+  h2.sec .tot{font-family:var(--ff-num);font-size:15px;color:var(--muted)}
+
+  /* ---------- Listas ---------- */
+  .row{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;
+    margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer}
+  .row:active{background:var(--surface-2)}
+  .row .txt{flex:1;min-width:0}
+  .row .t1{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .t2{font-size:12px;color:var(--faint);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .row .mon{font-family:var(--ff-num);font-weight:600;white-space:nowrap}
+  .row.pagado{opacity:.62}
+  .row.descartado{opacity:.42}
+  .row.descartado .mon,.row.descartado .t1{text-decoration:line-through}
+  .chip{font-size:11px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);white-space:nowrap}
+  .chip.ok{color:var(--green);border-color:rgba(95,192,140,.4)}
+  .chip.pend{color:var(--gold);border-color:rgba(233,179,86,.4)}
+  .chip.desc{color:var(--faint)}
+  .pill{width:8px;height:34px;border-radius:5px;flex-shrink:0}
+  .empty{text-align:center;color:var(--faint);padding:30px 14px;border:1px dashed var(--line);border-radius:var(--radius);font-size:14px}
+
+  .filtros{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+  .filtros::-webkit-scrollbar{display:none}
+  .fchip{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:7px 13px;font-size:13px;
+    white-space:nowrap;cursor:pointer;color:var(--muted)}
+  .fchip.on{background:var(--gold);color:#20180A;border-color:var(--gold);font-weight:600}
+
+  /* ---------- Categorías / barras ---------- */
+  .cat{margin-bottom:11px}
+  .cat .l{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+  .cat .l .pct{color:var(--faint);font-family:var(--ff-num);font-size:12px}
+  .cat .bar{height:7px;background:var(--surface);border-radius:5px;overflow:hidden}
+  .cat .bar i{display:block;height:100%;border-radius:5px;background:var(--gold)}
+
+  /* ---------- Bottom nav ---------- */
+  nav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(21,40,39,.97);backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);display:flex;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+  nav button{flex:1;background:none;border:none;color:var(--faint);display:flex;flex-direction:column;align-items:center;
+    gap:3px;font-size:10.5px;padding:6px 2px;cursor:pointer;letter-spacing:.02em}
+  nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  nav button.on{color:var(--gold)}
+  .fab{position:fixed;right:18px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:41;width:56px;height:56px;
+    border-radius:50%;background:var(--gold);color:#20180A;border:none;font-size:30px;line-height:1;cursor:pointer;
+    box-shadow:0 8px 24px rgba(0,0,0,.45);display:none;place-items:center}
+  .fab.on{display:grid}
+
+  /* ---------- Modal ---------- */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(6,12,12,.72);display:none;align-items:flex-end;justify-content:center}
+  .modal.on{display:flex}
+  .sheet{background:var(--surface);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:520px;
+    padding:20px 18px calc(24px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;animation:up .22s ease}
+  @keyframes up{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .sheet h3{font-family:var(--ff-dis);font-size:24px;font-weight:400;margin-bottom:16px}
+  .seg{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:11px}
+  .seg button{flex:1;background:none;border:none;padding:9px;border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--surface-2);color:var(--text);font-weight:600}
+  .acts{display:flex;gap:9px;margin-top:18px}
+  .acts .btn{flex:1}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));z-index:80;
+    background:var(--surface-2);border:1px solid var(--line);padding:10px 16px;border-radius:30px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.25s}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
+  @media(min-width:640px){ .modal{align-items:center} .sheet{border-radius:20px} }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login">
+  <div class="card-login">
+    <h1>Presupuesto<br>Familiar</h1>
+    <p class="sub">Organizan juntos, crecen juntos.</p>
+    <div class="field"><label>Correo</label><input id="li-mail" type="email" autocomplete="username" placeholder="tu@correo.com"></div>
+    <div class="field"><label>Contraseña</label><input id="li-pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="btn" id="li-btn">Entrar</button>
+    <div class="err" id="li-err"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" style="display:none">
+  <header>
+    <div class="htop">
+      <div class="periodo-sel"><select id="sel-periodo"></select></div>
+      <div class="who">
+        <span class="dot" id="net" title="Sincronizado"></span>
+        <div class="avatar" id="avatar">–</div>
+      </div>
+    </div>
+    <div class="cinta" id="cinta"></div>
+    <div class="cinta-lbl"><span id="cinta-a">—</span><span id="cinta-b">—</span></div>
+  </header>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="view on" id="v-dash">
+      <div class="hero">
+        <div class="lbl">Saldo disponible hoy</div>
+        <div class="big num pos" id="h-saldo">L 0.00</div>
+        <div class="note" id="h-note">—</div>
+        <div class="barra" id="h-barra"></div>
+        <div class="leyenda">
+          <span><b style="background:var(--green)"></b>Pagado</span>
+          <span><b style="background:var(--gold)"></b>Pendiente</span>
+          <span><b style="background:var(--paco)"></b>Gastos diarios</span>
+          <span><b style="background:var(--surface-2)"></b>Libre</span>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="kpi"><div class="k">Ingresos</div><div class="v num" id="k-ing">L 0</div><div class="s" id="k-ing-s">0 registros</div></div>
+        <div class="kpi"><div class="k">Obligaciones</div><div class="v num" id="k-obl">L 0</div><div class="s" id="k-obl-s">0 de 0 pagadas</div></div>
+        <div class="kpi"><div class="k">Gastos diarios</div><div class="v num" id="k-gd">L 0</div><div class="s" id="k-gd-s">0 registros</div></div>
+        <div class="kpi"><div class="k">Pendiente por pagar</div><div class="v num" id="k-pen" style="color:var(--gold)">L 0</div><div class="s" id="k-pen-s">0 obligaciones</div></div>
+      </div>
+      <h2 class="sec">Por categoría <span class="tot" id="c-tot"></span></h2>
+      <div id="cats"></div>
+      <h2 class="sec">Quién gasta qué</h2>
+      <div id="personas"></div>
+      <div style="height:8px"></div>
+      <button class="btn ghost" id="btn-cerrar" style="margin-top:14px">Cerrar quincena y abrir la siguiente</button>
+    </section>
+
+    <!-- INGRESOS -->
+    <section class="view" id="v-ing">
+      <h2 class="sec">Ingresos <span class="tot" id="i-tot">L 0.00</span></h2>
+      <div id="lista-ing"></div>
+    </section>
+
+    <!-- OBLIGACIONES -->
+    <section class="view" id="v-obl">
+      <h2 class="sec">Obligaciones <span class="tot" id="o-tot">L 0.00</span></h2>
+      <div class="filtros" id="f-obl"></div>
+      <div id="lista-obl"></div>
+    </section>
+
+    <!-- GASTOS DIARIOS -->
+    <section class="view" id="v-gd">
+      <h2 class="sec">Gastos diarios <span class="tot" id="g-tot">L 0.00</span></h2>
+      <div class="filtros" id="f-gd"></div>
+      <div id="lista-gd"></div>
+    </section>
+
+    <!-- HISTORIAL / AJUSTES -->
+    <section class="view" id="v-his">
+      <h2 class="sec">Historial</h2>
+      <div id="lista-his"></div>
+      <h2 class="sec">Ajustes</h2>
+      <div class="row" id="a-cats"><div class="pill" style="background:var(--gold)"></div><div class="txt"><div class="t1">Categorías</div><div class="t2" id="a-cats-s">—</div></div></div>
+      <div class="row" id="a-pers"><div class="pill" style="background:var(--lulu)"></div><div class="txt"><div class="t1">Personas</div><div class="t2" id="a-pers-s">—</div></div></div>
+      <div class="row" id="a-per"><div class="pill" style="background:var(--paco)"></div><div class="txt"><div class="t1">Editar este período</div><div class="t2">Nombre y fechas</div></div></div>
+      <div class="row" id="a-exp"><div class="pill" style="background:var(--green)"></div><div class="txt"><div class="t1">Exportar a Excel</div><div class="t2">Descarga el período visible</div></div></div>
+      <div class="row" id="a-out"><div class="pill" style="background:var(--red)"></div><div class="txt"><div class="t1">Cerrar sesión</div><div class="t2" id="a-out-s">—</div></div></div>
+      <div style="height:20px"></div>
+    </section>
+  </main>
+
+  <button class="fab" id="fab">+</button>
+
+  <nav>
+    <button class="on" data-v="dash"><svg viewBox="0 0 24 24"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Resumen</button>
+    <button data-v="ing"><svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>Ingresos</button>
+    <button data-v="obl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7H4V5h11"/></svg>Obligaciones</button>
+    <button data-v="gd"><svg viewBox="0 0 24 24"><path d="M3 6h18v12H3z"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>Gastos</button>
+    <button data-v="his"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Historial</button>
+  </nav>
+</div>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ══════════════════════════════════════════════════════════════
+   1) CONFIGURACIÓN — pega aquí los datos de tu proyecto Firebase
+   ══════════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+ {
+  apiKey: "AIzaSyBt19m7aehX3aUCliUE7kGWhX22RwziZ7g",
+  authDomain: "presupuesto-familiar-714a4.firebaseapp.com",
+  projectId: "presupuesto-familiar-714a4",
+  storageBucket: "presupuesto-familiar-714a4.firebasestorage.app",
+  messagingSenderId: "1037484893371",
+  appId: "1:1037484893371:web:05c838eba0321fe21a359e"
+};};
+const HOGAR = "casa-paco-lulu";   // mismo valor para los dos
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, getDocs,
+  query, orderBy, serverTimestamp, writeBatch }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const fapp = initializeApp(firebaseConfig);
+const auth = getAuth(fapp);
+const db = initializeFirestore(fapp, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+
+const R = (...p) => [`hogares/${HOGAR}`, ...p].join("/");
+
+/* ══════════ Estado ══════════ */
+const S = {
+  user:null, periodos:[], pid:null, per:null,
+  ing:[], obl:[], gd:[],
+  cfg:{ categorias:["Vivienda","Transporte","Deudas","Préstamo","Salud","Madi","Entretenimiento","Medicinas","Vitaminas","Alimentación","Servicios","Educación","Ahorros","Ropa","Otro"],
+        personas:["Paco","Lulu","Familia","Madi"] },
+  fObl:"todas", fGd:"todas", view:"dash", unsub:[]
+};
+const COLOR = { Paco:"var(--paco)", Lulu:"var(--lulu)", Familia:"var(--green)", Madi:"var(--gold)" };
+const colorDe = p => COLOR[p] || "var(--faint)";
+const L = n => "L " + (Number(n)||0).toLocaleString("es-HN",{minimumFractionDigits:2,maximumFractionDigits:2});
+const Lc = n => "L " + Math.round(Number(n)||0).toLocaleString("es-HN");
+const $ = s => document.querySelector(s);
+const hoy = () => new Date().toISOString().slice(0,10);
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),2200); }
+
+/* ══════════ Login ══════════ */
+$("#li-btn").onclick = async () => {
+  $("#li-err").textContent = "";
+  try { await signInWithEmailAndPassword(auth, $("#li-mail").value.trim(), $("#li-pass").value); }
+  catch(e){ $("#li-err").textContent = e.code==="auth/invalid-credential" ? "Correo o contraseña incorrectos." : "No se pudo entrar: " + e.code; }
+};
+$("#li-pass").addEventListener("keydown", e => { if(e.key==="Enter") $("#li-btn").click(); });
+
+onAuthStateChanged(auth, u => {
+  S.unsub.forEach(f=>f()); S.unsub=[];
+  if(!u){ $("#login").style.display="flex"; $("#app").style.display="none"; return; }
+  S.user = u;
+  const nombre = (u.displayName || u.email.split("@")[0]);
+  S.yo = /lu|lourdes/i.test(nombre) ? "Lulu" : "Paco";
+  $("#avatar").textContent = S.yo[0].toUpperCase();
+  $("#avatar").style.background = colorDe(S.yo);
+  $("#a-out-s").textContent = u.email;
+  $("#login").style.display="none"; $("#app").style.display="block";
+  arrancar();
+});
+$("#a-out").onclick = () => signOut(auth);
+window.addEventListener("online", ()=>$("#net").classList.remove("off"));
+window.addEventListener("offline", ()=>$("#net").classList.add("off"));
+if(!navigator.onLine) $("#net").classList.add("off");
+
+/* ══════════ Carga de datos ══════════ */
+async function arrancar(){
+  // Config (categorías / personas)
+  S.unsub.push(onSnapshot(doc(db, R("config/general")), s => {
+    if(s.exists()) S.cfg = { ...S.cfg, ...s.data() };
+    else setDoc(doc(db, R("config/general")), S.cfg);
+    pintar();
+  }));
+  // Lista de períodos
+  S.unsub.push(onSnapshot(query(collection(db, R("periodos")), orderBy("inicio","desc")), async snap => {
+    S.periodos = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    if(!S.periodos.length){ await crearPeriodoActual(); return; }
+    if(!S.pid || !S.periodos.some(p=>p.id===S.pid)) abrirPeriodo(S.periodos[0].id);
+    else { S.per = S.periodos.find(p=>p.id===S.pid); pintarSelector(); pintar(); }
+  }));
+}
+
+function abrirPeriodo(pid){
+  S.pid = pid;
+  S.per = S.periodos.find(p=>p.id===pid);
+  S.subP?.forEach(f=>f()); S.subP = [];
+  const escucha = (nom, campo) => onSnapshot(collection(db, R("periodos", pid, nom)), s => {
+    S[campo] = s.docs.map(d=>({ id:d.id, ...d.data() })); pintar();
+  });
+  S.subP.push(escucha("ingresos","ing"), escucha("obligaciones","obl"), escucha("gastos","gd"));
+  pintarSelector(); pintar();
+}
+
+/* Crea la quincena que corresponde a hoy */
+async function crearPeriodoActual(){
+  const d = new Date(), y = d.getFullYear(), m = d.getMonth(), dia = d.getDate();
+  const q1 = dia <= 15;
+  const ini = new Date(y, m, q1 ? 1 : 16);
+  const fin = new Date(y, m, q1 ? 15 : new Date(y, m+1, 0).getDate());
+  await nuevoPeriodo(ini, fin, 0, []);
+}
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const iso = d => d.toISOString().slice(0,10);
+
+async function nuevoPeriodo(ini, fin, saldoAnterior, obligacionesFijas){
+  const q = ini.getDate() <= 15 ? "Primera" : "Segunda";
+  const id = `${ini.getFullYear()}-${String(ini.getMonth()+1).padStart(2,"0")}-${ini.getDate()<=15?"Q1":"Q2"}`;
+  await setDoc(doc(db, R("periodos", id)), {
+    nombre: `${q} quincena de ${MESES[ini.getMonth()]} ${ini.getFullYear()}`,
+    inicio: iso(ini), fin: iso(fin), estado: "activo", creado: serverTimestamp()
+  }, { merge:true });
+  if(saldoAnterior > 0)
+    await setDoc(doc(db, R("periodos", id, "ingresos", "saldo-anterior")),
+      { desc:"Saldo quincena anterior", monto:saldoAnterior, persona:"Familia", fecha:iso(ini) });
+  if(obligacionesFijas?.length){
+    const b = writeBatch(db);
+    obligacionesFijas.forEach(o => b.set(doc(collection(db, R("periodos", id, "obligaciones"))),
+      { desc:o.desc, cat:o.cat, monto:o.monto, persona:o.persona, estado:"pendiente", fijo:true }));
+    await b.commit();
+  }
+  S.pid = id;
+  return id;
+}
+
+/* ══════════ Cálculos ══════════ */
+function totales(){
+  const ing = S.ing.reduce((a,x)=>a+(+x.monto||0),0);
+  const act = S.obl.filter(o=>o.estado!=="descartado");
+  const obl = act.reduce((a,x)=>a+(+x.monto||0),0);
+  const pag = act.filter(o=>o.estado==="pagado").reduce((a,x)=>a+(+x.monto||0),0);
+  const pen = obl - pag;
+  const gd  = S.gd.reduce((a,x)=>a+(+x.monto||0),0);
+  return { ing, obl, pag, pen, gd, act,
+    disponible: ing - pag - gd,     // plata que aún tenés en la mano
+    proyectado: ing - obl - gd };   // lo que queda si pagás todo lo pendiente
+}
+
+/* ══════════ Render ══════════ */
+function pintarSelector(){
+  const s = $("#sel-periodo");
+  s.innerHTML = S.periodos.map(p => `<option value="${p.id}" ${p.id===S.pid?"selected":""}>${esc(p.nombre)}${p.estado==="cerrado"?" · cerrada":""}</option>`).join("");
+  s.onchange = e => abrirPeriodo(e.target.value);
+}
+
+function pintarCinta(){
+  if(!S.per) return;
+  const ini = new Date(S.per.inicio+"T12:00"), fin = new Date(S.per.fin+"T12:00");
+  const dias = Math.round((fin-ini)/864e5)+1, h = new Date();
+  let idx = Math.round((new Date(iso(h)+"T12:00")-ini)/864e5);
+  $("#cinta").innerHTML = Array.from({length:dias},(_,i)=>
+    `<i class="${i<idx?"pasado":i===idx?"hoy":""}"></i>`).join("");
+  const f = d => `${d.getDate()} ${MESES[d.getMonth()].slice(0,3)}`;
+  $("#cinta-a").textContent = f(ini);
+  $("#cinta-b").textContent = (idx>=0&&idx<dias) ? `día ${idx+1} de ${dias}` : f(fin);
+}
+
+function pintar(){
+  if(!S.per) return;
+  pintarCinta();
+  const t = totales();
+
+  // Hero
+  const hs = $("#h-saldo");
+  hs.textContent = L(t.disponible);
+  hs.className = "big num " + (t.disponible>=0?"pos":"neg");
+  $("#h-note").innerHTML = t.pen>0
+    ? `Faltan <b>${L(t.pen)}</b> por pagar · quedarían <b style="color:${t.proyectado>=0?"var(--green)":"var(--red)"}">${L(t.proyectado)}</b>`
+    : "Todas las obligaciones están pagadas o descartadas.";
+  const base = Math.max(t.ing, t.pag+t.pen+t.gd, 1);
+  const w = v => (v/base*100).toFixed(1)+"%";
+  $("#h-barra").innerHTML =
+    `<span style="width:${w(t.pag)};background:var(--green)"></span>
+     <span style="width:${w(t.pen)};background:var(--gold)"></span>
+     <span style="width:${w(t.gd)};background:var(--paco)"></span>`;
+
+  // KPIs
+  $("#k-ing").textContent = Lc(t.ing);  $("#k-ing-s").textContent = `${S.ing.length} registro${S.ing.length===1?"":"s"}`;
+  $("#k-obl").textContent = Lc(t.obl);
+  $("#k-obl-s").textContent = `${t.act.filter(o=>o.estado==="pagado").length} de ${t.act.length} pagadas`;
+  $("#k-gd").textContent = Lc(t.gd);    $("#k-gd-s").textContent = `${S.gd.length} registro${S.gd.length===1?"":"s"}`;
+  $("#k-pen").textContent = Lc(t.pen);
+  $("#k-pen-s").textContent = `${t.act.filter(o=>o.estado==="pendiente").length} obligaciones`;
+
+  // Categorías (obligaciones activas + gastos diarios)
+  const porCat = {};
+  t.act.forEach(o => porCat[o.cat||"Otro"] = (porCat[o.cat||"Otro"]||0) + (+o.monto||0));
+  S.gd.forEach(g => porCat[g.cat||"Otro"] = (porCat[g.cat||"Otro"]||0) + (+g.monto||0));
+  const tot = Object.values(porCat).reduce((a,b)=>a+b,0);
+  const orden = Object.entries(porCat).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const max = orden[0]?.[1] || 1;
+  $("#c-tot").textContent = L(tot);
+  $("#cats").innerHTML = orden.length ? orden.map(([c,v])=>`
+    <div class="cat"><div class="l"><span>${esc(c)}</span>
+      <span><span class="num">${Lc(v)}</span> <span class="pct">${(v/tot*100).toFixed(0)}%</span></span></div>
+      <div class="bar"><i style="width:${(v/max*100).toFixed(1)}%"></i></div></div>`).join("")
+    : `<div class="empty">Todavía no hay gastos registrados.</div>`;
+
+  // Personas
+  const porP = {};
+  t.act.forEach(o => porP[o.persona||"Familia"] = (porP[o.persona||"Familia"]||0)+(+o.monto||0));
+  S.gd.forEach(g => porP[g.persona||"Familia"] = (porP[g.persona||"Familia"]||0)+(+g.monto||0));
+  const maxP = Math.max(...Object.values(porP), 1);
+  $("#personas").innerHTML = Object.entries(porP).sort((a,b)=>b[1]-a[1]).map(([p,v])=>`
+    <div class="cat"><div class="l"><span>${esc(p)}</span><span class="num">${Lc(v)}</span></div>
+      <div class="bar"><i style="width:${(v/maxP*100).toFixed(1)}%;background:${colorDe(p)}"></i></div></div>`).join("")
+    || `<div class="empty">Sin datos.</div>`;
+
+  pintarIngresos(); pintarObl(); pintarGd(); pintarHistorial();
+  $("#btn-cerrar").style.display = S.per.estado==="cerrado" ? "none" : "block";
+  $("#fab").classList.toggle("on", ["ing","obl","gd"].includes(S.view) && S.per.estado!=="cerrado");
+}
+
+function pintarIngresos(){
+  $("#i-tot").textContent = L(S.ing.reduce((a,x)=>a+(+x.monto||0),0));
+  $("#lista-ing").innerHTML = S.ing.length ? [...S.ing].sort((a,b)=>(b.monto||0)-(a.monto||0)).map(i=>`
+    <div class="row" data-t="ing" data-id="${i.id}">
+      <div class="pill" style="background:${colorDe(i.persona)}"></div>
+      <div class="txt"><div class="t1">${esc(i.desc)}</div>
+        <div class="t2"><span>${esc(i.persona||"Familia")}</span>${i.fecha?`<span>· ${esc(i.fecha)}</span>`:""}</div></div>
+      <div class="mon" style="color:var(--green)">${L(i.monto)}</div>
+    </div>`).join("") : `<div class="empty">Agregá el sueldo, saldo anterior o cualquier entrada con el botón +</div>`;
+}
+
+function pintarObl(){
+  const f = ["todas","pendiente","pagado","descartado"];
+  $("#f-obl").innerHTML = f.map(x=>`<div class="fchip ${S.fObl===x?"on":""}" data-f="${x}">${x==="todas"?"Todas":x==="pagado"?"Pagadas":x==="pendiente"?"Pendientes":"Descartadas"}</div>`).join("");
+  $("#f-obl").querySelectorAll(".fchip").forEach(c=>c.onclick=()=>{ S.fObl=c.dataset.f; pintarObl(); });
+  const act = S.obl.filter(o=>o.estado!=="descartado");
+  $("#o-tot").textContent = L(act.reduce((a,x)=>a+(+x.monto||0),0));
+  const lista = S.obl.filter(o => S.fObl==="todas" ? true : o.estado===S.fObl)
+    .sort((a,b)=>{ const r={pendiente:0,pagado:1,descartado:2}; return (r[a.estado]-r[b.estado]) || (b.monto-a.monto); });
+  $("#lista-obl").innerHTML = lista.length ? lista.map(o=>`
+    <div class="row ${o.estado}" data-t="obl" data-id="${o.id}">
+      <div class="pill" style="background:${colorDe(o.persona)}"></div>
+      <div class="txt"><div class="t1">${esc(o.desc)}</div>
+        <div class="t2"><span class="chip ${o.estado==="pagado"?"ok":o.estado==="pendiente"?"pend":"desc"}">${o.estado==="pagado"?"✓ Pagado":o.estado==="pendiente"?"⏳ Pendiente":"Descartado"}</span>
+          <span>${esc(o.cat||"Otro")}</span><span>· ${esc(o.persona||"Familia")}</span>${o.fijo?"<span>· fijo</span>":""}</div></div>
+      <div class="mon">${L(o.monto)}</div>
+    </div>`).join("") : `<div class="empty">Sin obligaciones en este filtro.</div>`;
+}
+
+function pintarGd(){
+  const pers = ["todas", ...(S.cfg.personas||[])];
+  $("#f-gd").innerHTML = pers.map(x=>`<div class="fchip ${S.fGd===x?"on":""}" data-f="${x}">${x==="todas"?"Todos":esc(x)}</div>`).join("");
+  $("#f-gd").querySelectorAll(".fchip").forEach(c=>c.onclick=()=>{ S.fGd=c.dataset.f; pintarGd(); });
+  const lista = S.gd.filter(g => S.fGd==="todas" ? true : g.persona===S.fGd).sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+  $("#g-tot").textContent = L(lista.reduce((a,x)=>a+(+x.monto||0),0));
+  // agrupado por día
+  const dias = {};
+  lista.forEach(g => (dias[g.fecha||"sin fecha"] ||= []).push(g));
+  $("#lista-gd").innerHTML = Object.keys(dias).length ? Object.entries(dias).map(([d,gs])=>`
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--faint);margin:14px 2px 6px;
+      text-transform:uppercase;letter-spacing:.06em">
+      <span>${fechaLarga(d)}</span><span class="num">${Lc(gs.reduce((a,x)=>a+(+x.monto||0),0))}</span></div>
+    ${gs.map(g=>`
+      <div class="row" data-t="gd" data-id="${g.id}">
+        <div class="pill" style="background:${colorDe(g.persona)}"></div>
+        <div class="txt"><div class="t1">${esc(g.desc)}</div>
+          <div class="t2"><span>${esc(g.cat||"Otro")}</span><span>· ${esc(g.persona||"Familia")}</span></div></div>
+        <div class="mon">${L(g.monto)}</div>
+      </div>`).join("")}`).join("")
+    : `<div class="empty">Registrá aquí el pasaje, el súper, el café… lo del día a día.</div>`;
+}
+function fechaLarga(d){
+  if(d==="sin fecha") return d;
+  const x = new Date(d+"T12:00");
+  if(d===hoy()) return "Hoy";
+  const ayer = new Date(Date.now()-864e5).toISOString().slice(0,10);
+  if(d===ayer) return "Ayer";
+  return `${x.getDate()} de ${MESES[x.getMonth()]}`;
+}
+
+function pintarHistorial(){
+  const otros = S.periodos.filter(p=>p.id!==S.pid);
+  $("#lista-his").innerHTML = otros.length ? otros.map(p=>`
+    <div class="row" data-t="per" data-id="${p.id}">
+      <div class="pill" style="background:${p.estado==="cerrado"?"var(--faint)":"var(--green)"}"></div>
+      <div class="txt"><div class="t1">${esc(p.nombre)}</div>
+        <div class="t2"><span>${esc(p.inicio)} → ${esc(p.fin)}</span>${p.estado==="cerrado"&&p.resumen?`<span>· saldo ${L(p.resumen.saldo)}</span>`:""}</div></div>
+      <div class="mon" style="color:var(--muted)">${p.resumen?Lc(p.resumen.gastos):"–"}</div>
+    </div>`).join("") : `<div class="empty">Todavía no hay quincenas anteriores. Cuando cierres esta, quedará guardada acá.</div>`;
+  $("#a-cats-s").textContent = `${(S.cfg.categorias||[]).length} categorías`;
+  $("#a-pers-s").textContent = (S.cfg.personas||[]).join(" · ");
+}
+document.addEventListener("click", e => {
+  const r = e.target.closest("#lista-his .row[data-t='per']");
+  if(r) abrirPeriodo(r.dataset.id);
+});
+
+/* ══════════ Navegación ══════════ */
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  S.view = b.dataset.v;
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("on"));
+  $("#v-"+S.view).classList.add("on");
+  $("#fab").classList.toggle("on", ["ing","obl","gd"].includes(S.view) && S.per?.estado!=="cerrado");
+  window.scrollTo({top:0});
+});
+
+/* ══════════ Modal ══════════ */
+const M = $("#modal"), SH = $("#sheet");
+const cerrar = () => M.classList.remove("on");
+M.onclick = e => { if(e.target===M) cerrar(); };
+const opciones = (arr, sel) => arr.map(o=>`<option ${o===sel?"selected":""}>${esc(o)}</option>`).join("");
+
+$("#fab").onclick = () => formulario(S.view === "ing" ? "ing" : S.view === "obl" ? "obl" : "gd", null);
+
+document.addEventListener("click", e => {
+  const r = e.target.closest(".row[data-t]");
+  if(!r || r.dataset.t==="per") return;
+  if(S.per?.estado==="cerrado"){ toast("Esta quincena está cerrada."); return; }
+  formulario(r.dataset.t, r.dataset.id);
+});
+
+function formulario(tipo, id){
+  const col = tipo==="ing" ? "ingresos" : tipo==="obl" ? "obligaciones" : "gastos";
+  const arr = tipo==="ing" ? S.ing : tipo==="obl" ? S.obl : S.gd;
+  const d = id ? arr.find(x=>x.id===id) : {};
+  const titulo = { ing:"Ingreso", obl:"Obligación", gd:"Gasto diario" }[tipo];
+  const cats = S.cfg.categorias||[], pers = S.cfg.personas||[];
+
+  SH.innerHTML = `
+    <h3>${id?"Editar":"Nuevo"} ${titulo.toLowerCase()}</h3>
+    <div class="field"><label>Descripción</label><input id="f-desc" value="${esc(d.desc||"")}" placeholder="${tipo==="ing"?"Sueldo, reembolso…":"Luz, súper, taxi…"}"></div>
+    <div class="field"><label>Monto (L)</label><input id="f-monto" type="number" inputmode="decimal" step="0.01" value="${d.monto??""}" placeholder="0.00"></div>
+    ${tipo!=="ing" ? `<div class="field"><label>Categoría</label><select id="f-cat">${opciones(cats, d.cat||"Otro")}</select></div>` : ""}
+    <div class="field"><label>Persona</label><select id="f-per">${opciones(pers, d.persona||S.yo)}</select></div>
+    ${tipo==="gd" ? `<div class="field"><label>Fecha</label><input id="f-fecha" type="date" value="${d.fecha||hoy()}"></div>` : ""}
+    ${tipo==="obl" ? `
+      <div class="field"><label>Estado</label>
+        <div class="seg" id="f-estado">
+          ${["pendiente","pagado","descartado"].map(x=>`<button data-e="${x}" class="${(d.estado||"pendiente")===x?"on":""}">${x==="pendiente"?"⏳ Pendiente":x==="pagado"?"✓ Pagado":"Descartado"}</button>`).join("")}
+        </div></div>
+      <label style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);margin-top:4px">
+        <input type="checkbox" id="f-fijo" ${d.fijo?"checked":""} style="width:auto"> Se repite cada quincena
+      </label>` : ""}
+    <div class="acts">
+      ${id?`<button class="btn danger" id="f-del">Eliminar</button>`:""}
+      <button class="btn" id="f-ok">${id?"Guardar cambios":"Agregar"}</button>
+    </div>`;
+
+  let estado = d.estado || "pendiente";
+  SH.querySelectorAll("#f-estado button").forEach(b => b.onclick = () => {
+    estado = b.dataset.e;
+    SH.querySelectorAll("#f-estado button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+  });
+
+  $("#f-ok").onclick = async () => {
+    const desc = $("#f-desc").value.trim(), monto = parseFloat($("#f-monto").value);
+    if(!desc || !(monto>=0)) { toast("Escribí una descripción y un monto."); return; }
+    const data = { desc, monto, persona: $("#f-per").value };
+    if(tipo!=="ing") data.cat = $("#f-cat").value;
+    if(tipo==="gd") data.fecha = $("#f-fecha").value || hoy();
+    if(tipo==="ing") data.fecha = d.fecha || hoy();
+    if(tipo==="obl"){ data.estado = estado; data.fijo = $("#f-fijo").checked; }
+    data.por = S.yo; data.act = serverTimestamp();
+    const ref = collection(db, R("periodos", S.pid, col));
+    if(id) await updateDoc(doc(db, R("periodos", S.pid, col, id)), data);
+    else await addDoc(ref, data);
+    cerrar(); toast(id?"Cambios guardados":"Agregado");
+  };
+  if(id) $("#f-del").onclick = async () => {
+    await deleteDoc(doc(db, R("periodos", S.pid, col, id)));
+    cerrar(); toast("Eliminado");
+  };
+  M.classList.add("on");
+  setTimeout(()=>$("#f-desc").focus(), 60);
+}
+
+/* ══════════ Cerrar quincena ══════════ */
+$("#btn-cerrar").onclick = () => {
+  const t = totales();
+  const fin = new Date(S.per.fin+"T12:00");
+  const sig = new Date(fin.getTime()+864e5);
+  const sigFin = sig.getDate()===1
+    ? new Date(sig.getFullYear(), sig.getMonth(), 15)
+    : new Date(sig.getFullYear(), sig.getMonth()+1, 0);
+  const fijas = S.obl.filter(o=>o.fijo && o.estado!=="descartado");
+  SH.innerHTML = `
+    <h3>Cerrar la quincena</h3>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:16px">
+      Se guarda <b>${esc(S.per.nombre)}</b> en el historial (solo lectura) y se abre la siguiente.</p>
+    <div class="kpi" style="margin-bottom:10px"><div class="k">Saldo que pasa a la siguiente</div>
+      <div class="v num" style="color:${t.disponible>=0?"var(--green)":"var(--red)"}">${L(t.disponible)}</div>
+      <div class="s">ingresos ${Lc(t.ing)} − pagado ${Lc(t.pag)} − gastos diarios ${Lc(t.gd)}</div></div>
+    ${t.pen>0?`<div class="kpi" style="margin-bottom:10px"><div class="k">Ojo</div>
+      <div class="v num" style="color:var(--gold);font-size:16px">${L(t.pen)} sin pagar</div>
+      <div class="s">quedan marcadas como pendientes en el historial</div></div>`:""}
+    <label style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);margin:12px 0">
+      <input type="checkbox" id="c-fijos" checked style="width:auto"> Copiar las ${fijas.length} obligaciones fijas
+    </label>
+    <label style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);margin-bottom:6px">
+      <input type="checkbox" id="c-saldo" ${t.disponible>0?"checked":""} style="width:auto"> Pasar el saldo como ingreso inicial
+    </label>
+    <div class="acts">
+      <button class="btn ghost" id="c-no">Cancelar</button>
+      <button class="btn" id="c-si">Cerrar y abrir siguiente</button>
+    </div>`;
+  M.classList.add("on");
+  $("#c-no").onclick = cerrar;
+  $("#c-si").onclick = async () => {
+    $("#c-si").disabled = true; $("#c-si").textContent = "Cerrando…";
+    await updateDoc(doc(db, R("periodos", S.pid)), {
+      estado:"cerrado", cerradoEl: serverTimestamp(),
+      resumen: { ingresos:t.ing, gastos:t.pag+t.gd, obligaciones:t.obl, pendiente:t.pen, saldo:t.disponible }
+    });
+    const nid = await nuevoPeriodo(sig, sigFin,
+      $("#c-saldo").checked ? Math.max(t.disponible,0) : 0,
+      $("#c-fijos").checked ? fijas.map(o=>({...o, estado:"pendiente"})) : []);
+    cerrar(); toast("Nueva quincena lista");
+    abrirPeriodo(nid);
+  };
+};
+
+/* ══════════ Ajustes ══════════ */
+$("#a-cats").onclick = () => listaEditable("categorias", "Categorías");
+$("#a-pers").onclick = () => listaEditable("personas", "Personas");
+
+function listaEditable(campo, titulo){
+  const arr = [...(S.cfg[campo]||[])];
+  const dibuja = () => {
+    SH.innerHTML = `<h3>${titulo}</h3>
+      ${arr.map((c,i)=>`
+        <div class="row" style="cursor:default">
+          ${campo==="personas"?`<div class="pill" style="background:${colorDe(c)}"></div>`:""}
+          <div class="txt"><div class="t1">${esc(c)}</div></div>
+          <button class="btn sm ghost" data-i="${i}">Quitar</button>
+        </div>`).join("")}
+      <div class="field" style="margin-top:14px"><label>Agregar</label>
+        <div style="display:flex;gap:8px"><input id="ne" placeholder="Nombre nuevo">
+        <button class="btn sm" id="nb" style="width:auto;padding:0 18px">+</button></div></div>
+      <div class="acts"><button class="btn ghost" id="lc">Cerrar</button><button class="btn" id="lg">Guardar</button></div>`;
+    SH.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { arr.splice(+b.dataset.i,1); dibuja(); });
+    $("#nb").onclick = () => { const v=$("#ne").value.trim(); if(v && !arr.includes(v)){ arr.push(v); dibuja(); } };
+    $("#ne").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#nb").click(); });
+    $("#lc").onclick = cerrar;
+    $("#lg").onclick = async () => { await setDoc(doc(db, R("config/general")), { [campo]: arr }, {merge:true}); cerrar(); toast("Guardado"); };
+  };
+  dibuja(); M.classList.add("on");
+}
+
+$("#a-per").onclick = () => {
+  SH.innerHTML = `<h3>Editar período</h3>
+    <div class="field"><label>Nombre</label><input id="p-n" value="${esc(S.per.nombre)}"></div>
+    <div class="field"><label>Inicio</label><input id="p-i" type="date" value="${S.per.inicio}"></div>
+    <div class="field"><label>Fin</label><input id="p-f" type="date" value="${S.per.fin}"></div>
+    <div class="acts"><button class="btn ghost" id="p-c">Cancelar</button><button class="btn" id="p-g">Guardar</button></div>`;
+  M.classList.add("on");
+  $("#p-c").onclick = cerrar;
+  $("#p-g").onclick = async () => {
+    await updateDoc(doc(db, R("periodos", S.pid)),
+      { nombre:$("#p-n").value.trim(), inicio:$("#p-i").value, fin:$("#p-f").value });
+    cerrar(); toast("Período actualizado");
+  };
+};
+
+/* ══════════ Exportar a Excel ══════════ */
+$("#a-exp").onclick = async () => {
+  toast("Preparando archivo…");
+  const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.2/package/xlsx.mjs");
+  const t = totales();
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(
+    S.ing.map(i=>({Descripción:i.desc, Monto:i.monto, Persona:i.persona, Fecha:i.fecha||""}))), "Ingresos");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(
+    S.obl.map(o=>({Descripción:o.desc, Categoría:o.cat, Monto:o.monto, Persona:o.persona, Estado:o.estado, Fijo:o.fijo?"sí":""}))), "Obligaciones");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(
+    S.gd.map(g=>({Fecha:g.fecha, Descripción:g.desc, Categoría:g.cat, Monto:g.monto, Persona:g.persona}))), "Gastos diarios");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+    {Concepto:"Ingresos", Monto:t.ing},{Concepto:"Obligaciones", Monto:t.obl},
+    {Concepto:"Pagado", Monto:t.pag},{Concepto:"Pendiente", Monto:t.pen},
+    {Concepto:"Gastos diarios", Monto:t.gd},{Concepto:"Saldo disponible", Monto:t.disponible}]), "Resumen");
+  XLSX.writeFile(wb, `${S.per.nombre.replace(/\s+/g,"_")}.xlsx`);
+};
+</script>
+</body>
+</html>

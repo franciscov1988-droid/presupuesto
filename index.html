@@ -125,6 +125,41 @@
     gap:3px;font-size:10.5px;padding:6px 2px;cursor:pointer;letter-spacing:.02em}
   nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   nav button.on{color:var(--gold)}
+  nav button{font-size:10px}
+  nav button svg{width:20px;height:20px}
+
+  /* ---------- Reportes ---------- */
+  .rep-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin-bottom:12px}
+  .rep-card h3{font-family:var(--ff-dis);font-size:19px;font-weight:400;margin-bottom:3px}
+  .rep-card .sub{font-size:12px;color:var(--faint);margin-bottom:13px}
+  .rep-card .cat:last-child{margin-bottom:0}
+  .cat.tap{cursor:pointer} .cat.tap:active{opacity:.6}
+  .cat .l .num{font-size:13px}
+  .split{display:flex;gap:8px;margin-bottom:13px}
+  .split .b{flex:1;text-align:center;background:var(--bg);border-radius:10px;padding:10px 6px}
+  .split .b .n{font-family:var(--ff-num);font-size:17px;font-weight:600}
+  .split .b .l{font-size:11px;color:var(--muted);margin-top:2px}
+  /* barras verticales evolución */
+  .evo{display:flex;align-items:flex-end;gap:6px;height:130px;padding-top:8px}
+  .evo .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+  .evo .col .bwrap{width:100%;flex:1;display:flex;align-items:flex-end}
+  .evo .col .bar2{width:100%;background:linear-gradient(180deg,var(--gold),#c8923f);border-radius:5px 5px 0 0;min-height:3px;position:relative}
+  .evo .col .bar2 .v{position:absolute;top:-16px;left:0;right:0;text-align:center;font-family:var(--ff-num);font-size:10px;color:var(--muted)}
+  .evo .col .lb{font-size:9.5px;color:var(--faint);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .evo .col.act .bar2{background:linear-gradient(180deg,var(--green),#3f9c68)}
+  /* comparación vs quincena anterior */
+  .cmp-head{background:var(--bg);border-radius:11px;padding:13px;margin-bottom:13px;text-align:center}
+  .cmp-head .n{font-family:var(--ff-num);font-size:24px;font-weight:600;line-height:1.1}
+  .cmp-head .n.up{color:var(--red)} .cmp-head .n.dn{color:var(--green)} .cmp-head .n.eq{color:var(--muted)}
+  .cmp-head .t{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .dl{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .dl:last-child{border-bottom:none}
+  .dl .nm{flex:1;min-width:0}
+  .dl .nm .t1{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dl .nm .t2{font-size:11px;color:var(--faint);font-family:var(--ff-num);margin-top:1px}
+  .dl .ar{font-family:var(--ff-num);font-weight:600;font-size:14px;white-space:nowrap;display:flex;align-items:center;gap:4px}
+  .dl .ar.up{color:var(--red)} .dl .ar.dn{color:var(--green)}
+  .dl .ar svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
   .fab{position:fixed;right:18px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:41;width:56px;height:56px;
     border-radius:50%;background:var(--gold);color:#20180A;border:none;font-size:30px;line-height:1;cursor:pointer;
     box-shadow:0 8px 24px rgba(0,0,0,.45);display:none;place-items:center}
@@ -227,6 +262,12 @@
       <div id="lista-gd"></div>
     </section>
 
+    <!-- REPORTES -->
+    <section class="view" id="v-rep">
+      <div class="filtros" id="rep-scope"></div>
+      <div id="rep-body"></div>
+    </section>
+
     <!-- HISTORIAL / AJUSTES -->
     <section class="view" id="v-his">
       <h2 class="sec">Historial</h2>
@@ -248,6 +289,7 @@
     <button data-v="ing"><svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>Ingresos</button>
     <button data-v="obl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7H4V5h11"/></svg>Obligaciones</button>
     <button data-v="gd"><svg viewBox="0 0 24 24"><path d="M3 6h18v12H3z"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>Gastos</button>
+    <button data-v="rep"><svg viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Reportes</button>
     <button data-v="his"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Historial</button>
   </nav>
 </div>
@@ -260,14 +302,12 @@
    1) CONFIGURACIÓN — pega aquí los datos de tu proyecto Firebase
    ══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
-  apiKey: "AIzaSyBt19m7aehX3aUCliUE7kGWhX22RwziZ7g",
-  authDomain: "presupuesto-familiar-714a4.firebaseapp.com",
-  projectId: "presupuesto-familiar-714a4",
-  storageBucket: "presupuesto-familiar-714a4.firebasestorage.app",
-  messagingSenderId: "1037484893371",
-  appId: "1:1037484893371:web:05c838eba0321fe21a359e"
-
-
+  apiKey: "PEGA_TU_API_KEY",
+  authDomain: "TU-PROYECTO.firebaseapp.com",
+  projectId: "TU-PROYECTO",
+  storageBucket: "TU-PROYECTO.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:xxxxxxxxxxxx"
 };
 const HOGAR = "casa-paco-lulu";   // mismo valor para los dos
 
@@ -291,7 +331,8 @@ const S = {
   ing:[], obl:[], gd:[],
   cfg:{ categorias:["Vivienda","Transporte","Deudas","Préstamo","Salud","Madi","Entretenimiento","Medicinas","Vitaminas","Alimentación","Servicios","Educación","Ahorros","Ropa","Otro"],
         personas:["Paco","Lulu","Familia","Madi"] },
-  fObl:"todas", fGd:"todas", view:"dash", unsub:[]
+  fObl:"todas", fGd:"todas", view:"dash", unsub:[],
+  rep:{ scope:"quincena", hist:null, loading:false }
 };
 const COLOR = { Paco:"var(--paco)", Lulu:"var(--lulu)", Familia:"var(--green)", Madi:"var(--gold)" };
 const colorDe = p => COLOR[p] || "var(--faint)";
@@ -470,6 +511,7 @@ function pintar(){
     || `<div class="empty">Sin datos.</div>`;
 
   pintarIngresos(); pintarObl(); pintarGd(); pintarHistorial();
+  if(S.view==="rep") pintarReportes();
   $("#btn-cerrar").style.display = S.per.estado==="cerrado" ? "none" : "block";
   $("#fab").classList.toggle("on", ["ing","obl","gd"].includes(S.view) && S.per.estado!=="cerrado");
 }
@@ -551,6 +593,340 @@ document.addEventListener("click", e => {
   if(r) abrirPeriodo(r.dataset.id);
 });
 
+/* ══════════════════════════════════════════════════════════════
+   REPORTES
+   ══════════════════════════════════════════════════════════════ */
+function agrupar(items, key){
+  const m = {};
+  items.forEach(x => { const k = x[key] || "Otro"; m[k] = (m[k]||0) + (+x.monto||0); });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+function barras(pairs, {color="var(--gold)", tap=false, tipo=""}={}){
+  if(!pairs.length) return `<div class="empty">Sin datos.</div>`;
+  const tot = pairs.reduce((a,[,v])=>a+v,0) || 1;
+  const max = pairs[0][1] || 1;
+  return pairs.map(([k,v])=>`
+    <div class="cat ${tap?"tap":""}" ${tap?`data-cat="${esc(k)}" data-tipo="${tipo}"`:""}>
+      <div class="l"><span>${esc(k)}</span>
+        <span><span class="num">${Lc(v)}</span> <span class="pct">${(v/tot*100).toFixed(0)}%</span></span></div>
+      <div class="bar"><i style="width:${(v/max*100).toFixed(1)}%;background:${color}"></i></div>
+    </div>`).join("");
+}
+
+function barrasPersona(pairs){
+  if(!pairs.length) return `<div class="empty">Sin datos.</div>`;
+  const tot = pairs.reduce((a,[,v])=>a+v,0) || 1;
+  const max = pairs[0][1] || 1;
+  return pairs.map(([k,v])=>`
+    <div class="cat tap" data-cat="${esc(k)}" data-tipo="per">
+      <div class="l"><span>${esc(k)}</span>
+        <span><span class="num">${Lc(v)}</span> <span class="pct">${(v/tot*100).toFixed(0)}%</span></span></div>
+      <div class="bar"><i style="width:${(v/max*100).toFixed(1)}%;background:${colorDe(k)}"></i></div>
+    </div>`).join("");
+}
+
+/* Carga la quincena inmediatamente anterior (para el comparativo) */
+async function cargarAnterior(){
+  const idx = S.periodos.findIndex(p=>p.id===S.pid);
+  const ant = S.periodos[idx+1];   // orden desc → la siguiente es la anterior en el tiempo
+  if(!ant){ S.rep.prev = {none:true}; S.rep.prevFor = S.pid; return; }
+  S.rep.prevLoading = true;
+  try{
+    const [gs, os] = await Promise.all([
+      getDocs(collection(db, R("periodos", ant.id, "gastos"))),
+      getDocs(collection(db, R("periodos", ant.id, "obligaciones")))
+    ]);
+    S.rep.prev = { id:ant.id, nombre:ant.nombre,
+      gd: gs.docs.map(d=>d.data()),
+      obl: os.docs.map(d=>d.data()).filter(o=>o.estado!=="descartado") };
+  }catch(e){ S.rep.prev = {none:true}; }
+  S.rep.prevFor = S.pid; S.rep.prevLoading = false;
+  pintarReportes();
+}
+
+/* Tarjeta: esta quincena vs la anterior */
+function compCard(obl, gd){
+  const p = S.rep.prev;
+  if(S.rep.prevLoading) return `<div class="rep-card"><div class="empty">Comparando con la quincena anterior…</div></div>`;
+  if(p && p.none)
+    return `<div class="rep-card"><h3>Comparación</h3>
+      <div class="sub">Todavía no hay una quincena anterior guardada. Cuando cierres esta, la próxima ya se podrá comparar.</div></div>`;
+  if(!p) return "";
+
+  const por = (arr,k="cat") => { const m={}; arr.forEach(x=>{const c=x[k]||"Otro"; m[c]=(m[c]||0)+(+x.monto||0);}); return m; };
+  const cur = por([...obl, ...gd]);
+  const pre = por([...p.obl, ...p.gd]);
+  const totCur = Object.values(cur).reduce((a,b)=>a+b,0);
+  const totPre = Object.values(pre).reduce((a,b)=>a+b,0);
+  const dTot = totCur - totPre;
+
+  const cats = [...new Set([...Object.keys(cur), ...Object.keys(pre)])];
+  const deltas = cats.map(k=>({ k, a:pre[k]||0, b:cur[k]||0, d:(cur[k]||0)-(pre[k]||0) }))
+    .filter(x=>Math.round(x.d)!==0).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+
+  const flecha = up => up
+    ? `<svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>`
+    : `<svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg>`;
+  const cls = dTot>0?"up":dTot<0?"dn":"eq";
+  const cortaNom = (p.nombre||"").replace(/quincena de /,"").replace(/ de \d{4}/,"");
+
+  return `
+    <div class="rep-card">
+      <h3>Esta quincena vs. la anterior</h3>
+      <div class="sub">Comparado con ${esc(cortaNom)} · ojo: si esta quincena aún no termina, es normal ver menos gasto.</div>
+      <div class="cmp-head">
+        <div class="n ${cls}">${dTot>0?"+":""}${Lc(dTot)}</div>
+        <div class="t">${dTot>0?"gastaste más que" : dTot<0?"gastaste menos que" : "igual que"} la quincena pasada
+          <br>(${Lc(totPre)} → ${Lc(totCur)})</div>
+      </div>
+      ${deltas.length ? deltas.map(x=>`
+        <div class="dl">
+          <div class="nm"><div class="t1">${esc(x.k)}</div>
+            <div class="t2">${Lc(x.a)} → ${Lc(x.b)}</div></div>
+          <div class="ar ${x.d>0?"up":"dn"}">${flecha(x.d>0)} ${x.d>0?"+":""}${Lc(x.d)}</div>
+        </div>`).join("") : `<div class="empty">Sin cambios por categoría.</div>`}
+    </div>`;
+}
+
+/* Carga bajo demanda de TODAS las quincenas (para el modo histórico) */
+async function cargarHistorico(){
+  S.rep.loading = true; pintarReportes();
+  try{
+    const out = [];
+    for(const p of S.periodos){
+      const [gs, os] = await Promise.all([
+        getDocs(collection(db, R("periodos", p.id, "gastos"))),
+        getDocs(collection(db, R("periodos", p.id, "obligaciones")))
+      ]);
+      out.push({
+        per: p,
+        gd: gs.docs.map(d=>d.data()),
+        obl: os.docs.map(d=>d.data()).filter(o=>o.estado!=="descartado")
+      });
+    }
+    S.rep.hist = out.sort((a,b)=>(a.per.inicio||"").localeCompare(b.per.inicio||""));
+  }catch(e){ toast("No se pudo cargar el histórico"); }
+  S.rep.loading = false; pintarReportes();
+}
+
+function pintarReportes(){
+  const sc = S.rep.scope;
+  $("#rep-scope").innerHTML = [["quincena","Esta quincena"],["hist","Histórico completo"]]
+    .map(([v,t])=>`<div class="fchip ${sc===v?"on":""}" data-s="${v}">${t}</div>`).join("");
+  $("#rep-scope").querySelectorAll(".fchip").forEach(c=>c.onclick=()=>{
+    S.rep.scope = c.dataset.s;
+    if(S.rep.scope==="hist" && !S.rep.hist) cargarHistorico();
+    else pintarReportes();
+  });
+  if(sc==="quincena") repQuincena();
+  else repHistorico();
+}
+
+/* ---------- Reporte de la quincena activa ---------- */
+function repQuincena(){
+  const gd = S.gd;
+  const obl = S.obl.filter(o=>o.estado!=="descartado");
+  // trae la quincena anterior para el comparativo (una sola vez por período)
+  if(S.rep.prevFor !== S.pid && !S.rep.prevLoading) cargarAnterior();
+  const tGd = gd.reduce((a,x)=>a+(+x.monto||0),0);
+  const tObl = obl.reduce((a,x)=>a+(+x.monto||0),0);
+  const total = tGd + tObl;
+  const oblPag = obl.filter(o=>o.estado==="pagado").reduce((a,x)=>a+(+x.monto||0),0);
+
+  // Ritmo diario
+  const ini = new Date(S.per.inicio+"T12:00");
+  const diasTx = Math.max(1, Math.round((new Date(hoy()+"T12:00")-ini)/864e5)+1);
+  const promDia = tGd / diasTx;
+  const porDia = {};
+  gd.forEach(g => porDia[g.fecha||"?"] = (porDia[g.fecha||"?"]||0)+(+g.monto||0));
+  const diaCaro = Object.entries(porDia).sort((a,b)=>b[1]-a[1])[0];
+
+  // combinado por categoría (obl + gd)
+  const combi = {};
+  [...obl, ...gd].forEach(x => { const k=x.cat||"Otro"; combi[k]=(combi[k]||0)+(+x.monto||0); });
+  const catCombi = Object.entries(combi).sort((a,b)=>b[1]-a[1]);
+
+  $("#rep-body").innerHTML = `
+    ${compCard(obl, gd)}
+    <div class="rep-card">
+      <h3>¿En qué se fue la quincena?</h3>
+      <div class="sub">${esc(S.per.nombre)} · toca una categoría para ver el detalle</div>
+      <div class="split">
+        <div class="b"><div class="n num">${Lc(total)}</div><div class="l">Total</div></div>
+        <div class="b"><div class="n num" style="color:var(--gold)">${Lc(tObl)}</div><div class="l">Obligaciones</div></div>
+        <div class="b"><div class="n num" style="color:var(--paco)">${Lc(tGd)}</div><div class="l">Gastos diarios</div></div>
+      </div>
+      ${barras(catCombi, {tap:true, tipo:"combi"})}
+    </div>
+
+    <div class="rep-card">
+      <h3>Gastos diarios por categoría</h3>
+      <div class="sub">Lo variable: comida fuera, transporte, súper…</div>
+      ${barras(agrupar(gd,"cat"), {color:"var(--paco)", tap:true, tipo:"gd"})}
+    </div>
+
+    <div class="rep-card">
+      <h3>Obligaciones por categoría</h3>
+      <div class="sub">Lo fijo de la quincena · pagado ${Lc(oblPag)} de ${Lc(tObl)}</div>
+      ${barras(agrupar(obl,"cat"), {color:"var(--green)", tap:true, tipo:"obl"})}
+    </div>
+
+    <div class="rep-card">
+      <h3>Quién gastó</h3>
+      <div class="sub">Obligaciones + gastos diarios juntos</div>
+      ${barrasPersona(agrupar([...obl,...gd],"persona"))}
+    </div>
+
+    <div class="rep-card">
+      <h3>Ritmo diario</h3>
+      <div class="sub">Solo gastos diarios · llevás ${diasTx} día${diasTx===1?"":"s"} de quincena</div>
+      <div class="split">
+        <div class="b"><div class="n num">${Lc(promDia)}</div><div class="l">Promedio al día</div></div>
+        <div class="b"><div class="n num">${diaCaro?Lc(diaCaro[1]):"L 0"}</div><div class="l">Día más caro</div></div>
+        <div class="b"><div class="n num">${gd.length}</div><div class="l">Movimientos</div></div>
+      </div>
+    </div>
+
+    <button class="btn ghost" id="rep-exp">Descargar este reporte en Excel</button>
+    <div style="height:12px"></div>`;
+
+  $("#rep-body").querySelectorAll(".cat.tap").forEach(c=>c.onclick=()=>detalleCategoria(c.dataset.cat, c.dataset.tipo));
+  $("#rep-exp").onclick = () => exportarReporte();
+}
+
+/* Detalle de una categoría (o persona): lista todos los movimientos */
+function detalleCategoria(valor, tipo){
+  const campo = tipo==="per" ? "persona" : "cat";
+  const gd = S.gd.filter(x => (x[campo]||"Otro")===valor);
+  const obl = S.obl.filter(o=>o.estado!=="descartado").filter(x => (x[campo]||"Otro")===valor);
+  const items = [
+    ...obl.map(o=>({...o, _t:"Obligación"})),
+    ...gd.map(g=>({...g, _t:"Gasto diario"}))
+  ].sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+  const tot = items.reduce((a,x)=>a+(+x.monto||0),0);
+  SH.innerHTML = `
+    <h3>${esc(valor)}</h3>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px">
+      ${items.length} movimiento${items.length===1?"":"s"} · <b class="num">${L(tot)}</b> en la quincena</p>
+    ${items.length ? items.map(x=>`
+      <div class="row" style="cursor:default">
+        <div class="pill" style="background:${colorDe(x.persona)}"></div>
+        <div class="txt"><div class="t1">${esc(x.desc)}</div>
+          <div class="t2"><span>${esc(x._t)}</span><span>· ${esc(x.persona||"Familia")}</span>${x.fecha?`<span>· ${esc(x.fecha)}</span>`:""}</div></div>
+        <div class="mon">${L(x.monto)}</div>
+      </div>`).join("") : `<div class="empty">Sin movimientos.</div>`}
+    <div class="acts"><button class="btn" id="dc-x">Cerrar</button></div>`;
+  M.classList.add("on");
+  $("#dc-x").onclick = cerrar;
+}
+
+/* ---------- Reporte histórico (todas las quincenas) ---------- */
+function repHistorico(){
+  if(S.rep.loading){
+    $("#rep-body").innerHTML = `<div class="empty">Cargando todas las quincenas…</div>`; return;
+  }
+  const H = S.rep.hist || [];
+  if(H.length<1){ $("#rep-body").innerHTML = `<div class="empty">No hay quincenas para analizar.</div>`; return; }
+
+  const totalPer = h => [...h.gd, ...h.obl].reduce((a,x)=>a+(+x.monto||0),0);
+  const maxPer = Math.max(...H.map(totalPer), 1);
+  const granTotal = H.reduce((a,h)=>a+totalPer(h),0);
+  const promQuin = granTotal / H.length;
+
+  // categoría agregada en todo el histórico
+  const combi = {};
+  H.forEach(h => [...h.gd,...h.obl].forEach(x=>{ const k=x.cat||"Otro"; combi[k]=(combi[k]||0)+(+x.monto||0); }));
+  const catAll = Object.entries(combi).sort((a,b)=>b[1]-a[1]);
+
+  const corta = n => n.replace(/quincena de /,"").replace(/Primera/,"1ª").replace(/Segunda/,"2ª")
+    .replace(/ de \d{4}/,"").split(" ").slice(0,2).join(" ");
+
+  $("#rep-body").innerHTML = `
+    <div class="rep-card">
+      <h3>Evolución del gasto</h3>
+      <div class="sub">${H.length} quincena${H.length===1?"":"s"} · promedio ${Lc(promQuin)} c/u</div>
+      <div class="evo">
+        ${H.map(h=>{
+          const v = totalPer(h);
+          return `<div class="col ${h.per.id===S.pid?"act":""}">
+            <div class="bwrap"><div class="bar2" style="height:${(v/maxPer*100).toFixed(1)}%"><span class="v">${v>=1000?(v/1000).toFixed(1)+"k":Math.round(v)}</span></div></div>
+            <div class="lb">${esc(corta(h.per.nombre))}</div></div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <div class="rep-card">
+      <h3>¿En qué se va, en general?</h3>
+      <div class="sub">Sumando todas las quincenas · toca para ver por período</div>
+      ${barras(catAll, {tap:true, tipo:"histcat"})}
+    </div>
+
+    <div class="rep-card">
+      <h3>Promedio por quincena</h3>
+      <div class="sub">Cuánto pesa cada categoría en una quincena típica</div>
+      ${barras(catAll.map(([k,v])=>[k, v/H.length]), {color:"var(--paco)"})}
+    </div>
+
+    <button class="btn ghost" id="rep-exp">Descargar histórico en Excel</button>
+    <div style="height:12px"></div>`;
+
+  $("#rep-body").querySelectorAll(".cat.tap").forEach(c=>c.onclick=()=>detalleHistorico(c.dataset.cat));
+  $("#rep-exp").onclick = () => exportarHistorico();
+}
+
+/* Cómo evolucionó UNA categoría quincena a quincena */
+function detalleHistorico(cat){
+  const H = S.rep.hist || [];
+  const filas = H.map(h=>{
+    const v = [...h.gd,...h.obl].filter(x=>(x.cat||"Otro")===cat).reduce((a,x)=>a+(+x.monto||0),0);
+    return { nom:h.per.nombre, v };
+  }).filter(f=>f.v>0);
+  const tot = filas.reduce((a,f)=>a+f.v,0);
+  const max = Math.max(...filas.map(f=>f.v),1);
+  SH.innerHTML = `
+    <h3>${esc(cat)} en el tiempo</h3>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:16px">
+      Total histórico <b class="num">${L(tot)}</b> · promedio ${L(tot/(filas.length||1))} por quincena</p>
+    ${filas.length ? filas.map(f=>`
+      <div class="cat"><div class="l"><span>${esc(f.nom)}</span><span class="num">${Lc(f.v)}</span></div>
+        <div class="bar"><i style="width:${(f.v/max*100).toFixed(1)}%"></i></div></div>`).join("")
+      : `<div class="empty">Sin gastos en esta categoría.</div>`}
+    <div class="acts"><button class="btn" id="dh-x">Cerrar</button></div>`;
+  M.classList.add("on");
+  $("#dh-x").onclick = cerrar;
+}
+
+/* Exportar reporte de la quincena a Excel */
+async function exportarReporte(){
+  toast("Preparando reporte…");
+  const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.2/package/xlsx.mjs");
+  const obl = S.obl.filter(o=>o.estado!=="descartado");
+  const wb = XLSX.utils.book_new();
+  const hoja = (nombre, pairs) => XLSX.utils.book_append_sheet(wb,
+    XLSX.utils.json_to_sheet(pairs.map(([c,v])=>({Categoría:c, Monto:Math.round(v*100)/100}))), nombre);
+  hoja("Todo por categoría", agrupar([...obl,...S.gd],"cat"));
+  hoja("Gastos diarios", agrupar(S.gd,"cat"));
+  hoja("Obligaciones", agrupar(obl,"cat"));
+  hoja("Por persona", agrupar([...obl,...S.gd],"persona"));
+  XLSX.writeFile(wb, `Reporte_${S.per.nombre.replace(/\s+/g,"_")}.xlsx`);
+}
+async function exportarHistorico(){
+  if(!S.rep.hist){ toast("Cargá el histórico primero"); return; }
+  toast("Preparando histórico…");
+  const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.2/package/xlsx.mjs");
+  const wb = XLSX.utils.book_new();
+  // matriz período × categoría
+  const cats = new Set(), filas = [];
+  S.rep.hist.forEach(h=>{
+    const row = { Quincena:h.per.nombre };
+    [...h.gd,...h.obl].forEach(x=>{ const k=x.cat||"Otro"; cats.add(k); row[k]=(row[k]||0)+(+x.monto||0); });
+    row["TOTAL"] = [...h.gd,...h.obl].reduce((a,x)=>a+(+x.monto||0),0);
+    filas.push(row);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filas), "Por quincena");
+  XLSX.writeFile(wb, `Reporte_historico.xlsx`);
+}
+
 /* ══════════ Navegación ══════════ */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
   document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));
@@ -559,6 +935,7 @@ document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("on"));
   $("#v-"+S.view).classList.add("on");
   $("#fab").classList.toggle("on", ["ing","obl","gd"].includes(S.view) && S.per?.estado!=="cerrado");
+  if(S.view==="rep") pintarReportes();
   window.scrollTo({top:0});
 });
 
